@@ -7,6 +7,5 @@ lint:
 .PHONY: run
 run:
 	ansible-playbook playbook.yml \
-	   --vault-id archlinux-workstation@gopass-client.py \
 	   --extra-vars "@vars/custom.yml"
 
