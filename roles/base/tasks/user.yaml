@@ -1,0 +1,25 @@
+---
+
+- name: Ensure {{ user_group }} group exists
+  ansible.builtin.group:
+    name: '{{ user_group }}'
+    state: present
+    gid: '{{ user_gid }}'
+
+- name: Ensure {{ user_name }} user exists
+  ansible.builtin.user:
+    name: '{{ user_name }}'
+    groups:
+      - '{{ user_group }}'
+      - audio
+      - lp
+      - network
+      - power
+      - rfkill
+      - sys
+      - video
+      - wheel
+    append: true
+    group: '{{ user_group }}'
+    uid: '{{ user_uid }}'
+    shell: '/bin/zsh'

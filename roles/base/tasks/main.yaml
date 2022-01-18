@@ -1,0 +1,11 @@
+---
+
+- name: Archlinux setup
+  import_tasks: archlinux.yaml
+  when: ansible_facts['os_family']|lower == 'archlinux'
+
+- name: system config
+  import_tasks: system.yaml
+
+- name: user config
+  import_tasks: user.yaml

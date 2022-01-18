@@ -1,0 +1,94 @@
+---
+
+- name: Ensure the correct timezone is set
+  community.general.timezone:
+    name: '{{ system_timezone }}'
+
+- name: Ensure the correct locale is set
+  community.general.locale_gen:
+    name: '{{ system_locale }}'
+
+- name: Ensure the maximum size for persistent journal is set
+  community.general.ini_file:
+    path: /etc/systemd/journald.conf
+    owner: root
+    group: root
+    mode: 0644
+    section: Journal
+    option: SystemMaxUse
+    value: 100M
+  notify: restart systemd-journald service
+
+- name: Set up avahi local hostname resolution
+  ansible.builtin.lineinfile:
+    path: /etc/nsswitch.conf
+    owner: root
+    group: root
+    mode: 0644
+    regexp: '^hosts:'
+    line: 'hosts: files mymachines myhostname mdns_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] dns'
+  notify: restart avahi-daemon service
+
+- name: Ensure NetworkManager is not allowed to manage resolv.conf
+  community.general.ini_file:
+    path: /etc/NetworkManager/NetworkManager.conf
+    owner: root
+    group: root
+    mode: 0644
+    section: main
+    option: rc-manager
+    value: unmanaged
+  notify: restart NetworkManager service
+
+- name: Ensure the correct DNS resolvers are set
+  ansible.builtin.copy:
+    content: '{{ system_resolvconf }}'
+    dest: /etc/resolv.conf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Ensure the systemd-resolvers configuration directory exists
+  ansible.builtin.file:
+    path: /etc/systemd/resolved.conf.d
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Ensure the systemd-resolved configuration is set
+  ansible.builtin.template:
+    src: etc/systemd/resolved.conf.d/dns_over_tls.conf.j2
+    dest: /etc/systemd/resolved.conf.d/dns_over_tls.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart systemd-resolved service
+
+- name: Ensure the bluetooth Enhanced Retransmission Mode (ERTM) is disabled
+  ansible.builtin.copy:
+    src: etc/modprobe.d/xbox_bt.conf
+    dest: /etc/modprobe.d/xbox_bt.conf
+    owner: root
+    group: root
+    mode: 0644
+  when:
+    - system_bluetooth|bool
+
+- name: Ensure the desired system services are enabled and started
+  ansible.builtin.service:
+    name: '{{ item }}'
+    state: started
+    enabled: true
+  loop:
+    - avahi-daemon
+    - NetworkManager
+    - systemd-resolved
+
+- name: Ensure the bluetooth service is enabled and started
+  ansible.builtin.service:
+    name: bluetooth
+    state: started
+    enabled: true
+  when:
+    - system_bluetooth|bool
