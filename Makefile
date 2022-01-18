@@ -7,5 +7,5 @@ lint:
 .PHONY: run
 run:
 	ansible-playbook playbook.yaml \
-	   --extra-vars "@vars/custom.yaml"
+	   --extra-vars "@vars/main.yaml"
 
