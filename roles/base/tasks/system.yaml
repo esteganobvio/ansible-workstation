@@ -29,17 +29,6 @@
     line: 'hosts: files mymachines myhostname mdns_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] dns'
   notify: restart avahi-daemon service
 
-- name: Ensure NetworkManager is not allowed to manage resolv.conf
-  community.general.ini_file:
-    path: /etc/NetworkManager/NetworkManager.conf
-    owner: root
-    group: root
-    mode: 0644
-    section: main
-    option: rc-manager
-    value: unmanaged
-  notify: restart NetworkManager service
-
 - name: Ensure the correct DNS resolvers are set
   ansible.builtin.file:
     src: /run/systemd/resolve/stub-resolv.conf
@@ -48,6 +37,7 @@
     group: root
     state: link
     force: true
+  notify: restart NetworkManager service
 
 - name: Ensure the systemd-resolvers configuration directory exists
   ansible.builtin.file:
