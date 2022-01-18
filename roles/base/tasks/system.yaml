@@ -41,12 +41,13 @@
   notify: restart NetworkManager service
 
 - name: Ensure the correct DNS resolvers are set
-  ansible.builtin.copy:
-    content: '{{ system_resolvconf }}'
+  ansible.builtin.file:
+    src: /run/systemd/resolve/stub-resolv.conf
     dest: /etc/resolv.conf
     owner: root
     group: root
-    mode: 0644
+    state: link
+    force: true
 
 - name: Ensure the systemd-resolvers configuration directory exists
   ansible.builtin.file:
