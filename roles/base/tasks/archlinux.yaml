@@ -7,7 +7,7 @@
     group: wheel
 
 - name: Ensure the 'aur_builder' user can run 'sudo pacman' without a password
-  ansible.builtin.linefile:
+  ansible.builtin.lineinfile:
     path: /etc/sudoers.d/11-install-aur_builder
     line: 'aur_builder ALL=(ALL) NOPASSWD: /usr/bin/pacman'
     create: true
